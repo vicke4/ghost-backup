@@ -26,7 +26,8 @@ color_codes = {
 backup_options = {}
 
 def display_msg(msg, msg_type=None, msg_end="\n"):
-    bold = color_codes['BOLD'] if msg_type in ['error', 'options', 'default_value', 'bold'] else ''
+    bold = color_codes['BOLD'] if msg_type in ['error',
+                'options', 'default_value', 'bold'] else ''
 
     if msg_type in ['error', 'default_value']:
         color = color_codes['RED']
@@ -37,7 +38,8 @@ def display_msg(msg, msg_type=None, msg_end="\n"):
     else:
         color = ''
 
-    print ("{0}{1}{2}{END}".format(bold, color, msg, **color_codes), end=msg_end)
+    print ("{0}{1}{2}{END}".format(bold, color, msg, **color_codes),
+        end=msg_end)
 
 def display_yn_prompt(prompt_msg, prompt_type):
     while(1):
@@ -73,8 +75,18 @@ def display_input_prompt(prompt_msg, prompt_default_value=''):
         display_msg(prompt_default_value, 'default_value')
 
     backup_key = re.sub(' ', '_', prompt_msg).lower().strip()
-    user_input = getpass('') if backup_key.find('password') != -1 else input().lower().strip()
-    backup_options[backup_key] = prompt_default_value if user_input == '' else user_input
+
+    if backup_key.find('password') != -1:
+        user_input = getpass('')
+    else:
+        user_input = input().strip()
+
+    if user_input == '':
+        backup_options[backup_key] = prompt_default_value
+    else:
+        backup_options[backup_key] = user_input
+
+    return backup_options[backup_key]
 
 def get_error(e):
     return str(e, 'utf-8').strip() if type(e) != str else e.strip()
@@ -138,13 +150,82 @@ display_input_prompt('\nMySQL hostname', 'localhost')
 display_input_prompt('\nMySQL username', 'root')
 display_input_prompt('\nMySQL password')
 
-display_yn_prompt("\nWould you like to get notifications\non Telegram about backup status?", 'notification')
+display_msg('Please wait till the completion of requirements download...')
+
+install_package("google-api-python-client"
+            " google-auth-httplib2 google-auth-oauthlib")
+
+from apiclient.discovery import build
+from google_auth_oauthlib.flow import InstalledAppFlow
+from apiclient.http import MediaFileUpload
+
+SCOPES = ['https://www.googleapis.com/auth/drive']
+client_config = {
+    "installed": {
+        "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+        "token_uri": "https://accounts.google.com/o/oauth2/token",
+        "redirect_uris": ["urn:ietf:wg:oauth:2.0:oob", "http://localhost"]
+    }
+}
+
+client_config["installed"]['client_id'] = display_input_prompt(
+                                            '\nGoogle API client id')
+client_config["installed"]['client_secret'] = display_input_prompt(
+                                            '\nGoogle API client secret')
+
+flow = InstalledAppFlow.from_client_config(client_config, SCOPES)
+print('\n')
+
+try:
+    credentials = flow.run_console()
+except Exception as e:
+    display_msg('\nAn Error occured while authenticating Gdrive access',
+                                                              'error')
+    exit()
+
+display_msg('Please wait till the Gdrive setup is complete..', 'bold')
+drive = build('drive', 'v3', credentials=credentials)
+
+file_metadata = {
+    'name': 'Ghost Backup',
+    'mimeType': 'application/vnd.google-apps.folder'
+}
+
+resp = drive.files().create(body=file_metadata, fields='id').execute()
+
+if resp.get('id') is not None:
+    file_metadata = {
+        'name': 'initial_backup.txt',
+        'parents': [resp.get('id')]
+    }
+    status = subprocess.run(
+        "echo 'This text file is the initial backup' > backup.txt",
+                                                **subprocess_options)
+
+    if status.returncode == 0:
+        media = MediaFileUpload('backup.txt')
+        resp = drive.files().create(body=file_metadata, media_body=media,
+                                        fields='id').execute()
+        backup_options['backup_file_id'] = resp.get('id')
+        subprocess.run('rm backup.txt', **subprocess_options)
+    else:
+        display_msg('\nInitial file creation failed',
+                    'error')
+        exit()
+else:
+    display_msg('\nAn Error occured while creating folder on Gdrive',
+                                                            'error')
+    exit()
+
+display_yn_prompt("\nWould you like to get notifications"
+                "on Telegram about backup status?", 'notification')
 
 if backup_options['notification']:
     retries = 0
 
     while(retries < 3):
-        print("\nSend any message to Telegram bot @GhostBackupBot\nyou can also use this link ", end="")
+        print("\nSend any message to Telegram bot @GhostBackupBot\n"
+              "you can also use this link ", end="")
         display_msg("https://t.me/GhostBackupBot", "link", "")
         print("\nOnce done enter your Telegram username without '@'")
 
@@ -152,7 +233,8 @@ if backup_options['notification']:
         print("\nWait for sometime to setup notfications..")
         time.sleep(2)
 
-        resp = requests.get('https://api.telegram.org/bot484412347:AAH0ZavyA0yiYx1MYDngPQMt1HJkhcqTpmc/getUpdates')
+        resp = requests.get('https://api.telegram.org/bot484412347:'
+        'AAH0ZavyA0yiYx1MYDngPQMt1HJkhcqTpmc/getUpdates')
 
         for message_obj in resp.json()['result']:
             chat_obj = message_obj['message']['chat']
@@ -162,11 +244,13 @@ if backup_options['notification']:
                 break
 
         if backup_options.get('telegram_user_id', None) != None:
-            display_msg("\nNotification setup successfully completed", 'options')
+            display_msg("\nNotification setup successfully completed",
+                                                        'options')
             break
         else:
-            print("\nAre you sure your username is correct and you sent a msg @GhostBackupBot?")
-            print("As the notification setup failed retrying...")
+            print("\nAre you sure your username is correct and you "
+                    "sent a msg @GhostBackupBot?")
+            print("As the notification setup failed,     retrying...")
             retries += 1
 
 print("\n\nBackup json {0}\n".format(backup_options))
