@@ -5,40 +5,9 @@ import re
 import requests
 import time
 
-from misc import execute_command, send_notif
-
-color_codes = {
-    'HEADER': '\033[95m',
-    'BLUE': '\033[94m',
-    'GREEN': '\033[92m',
-    'WARNING': '\033[93m',
-    'RED': '\033[91m',
-    'END': '\033[0m',
-    'BOLD': '\033[1m',
-    'UNDERLINE': '\033[4m'
-}
+from misc import display_msg, error_and_exit, execute_command, send_notif
 
 backup_options = {}
-
-def display_msg(msg, msg_type=None, msg_end="\n"):
-    bold = color_codes['BOLD'] if msg_type in ['error',
-                'options', 'default_value', 'bold'] else ''
-
-    if msg_type in ['error', 'default_value']:
-        color = color_codes['RED']
-    elif msg_type == 'options':
-        color = color_codes['GREEN']
-    elif msg_type == 'link':
-        color = color_codes['BLUE']
-    else:
-        color = ''
-
-    print ("{0}{1}{2}{END}".format(bold, color, msg, **color_codes),
-        end=msg_end)
-
-def error_and_exit(msg):
-    display_msg(msg, 'error')
-    exit()
 
 def display_yn_prompt(prompt_msg, prompt_type, default_value='N', save=True):
     while(1):
@@ -132,7 +101,7 @@ def install_package(package_name):
             error_and_exit("\nInstallation of {0} failed with the error:\n{1}\n".format(
                 package_name, get_error(e.args[0])))
 
-def setup_gdrive():
+def get_credentials():
     from apiclient.discovery import build
     from google_auth_oauthlib.flow import InstalledAppFlow
     from apiclient.http import MediaFileUpload
@@ -147,9 +116,9 @@ def setup_gdrive():
     }
 
     client_config["installed"]['client_id'] = display_input_prompt(
-                                                '\nGoogle API client id')
+        '\nGoogle API client id')
     client_config["installed"]['client_secret'] = display_input_prompt(
-                                                '\nGoogle API client secret')
+        '\nGoogle API client secret')
 
     flow = InstalledAppFlow.from_client_config(client_config, SCOPES)
     print('\n')
@@ -157,7 +126,7 @@ def setup_gdrive():
     try:
         credentials = flow.run_console(
             authorization_prompt_message='Please visit the below URL to get\n'
-                'autorization code to authorize Google Drive access\n\n{url}',
+            'autorization code to authorize Google Drive access\n\n{url}',
             authorization_code_message='\nAuthorization Code\n'
         )
 
@@ -166,6 +135,11 @@ def setup_gdrive():
     except Exception as e:
         error_and_exit(
             '\nAn Error occured while authenticating Gdrive access\n{0}'.format(e))
+
+    return credentials
+
+def setup_gdrive():
+    credentials = get_credentials()
 
     display_msg('\nPlease wait till the Gdrive setup is complete..', 'bold')
     drive = build('drive', 'v3', credentials=credentials)

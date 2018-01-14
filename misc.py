@@ -7,6 +7,17 @@ subprocess_options = {
     'stdout': subprocess.PIPE
 }
 
+color_codes = {
+    'HEADER': '\033[95m',
+    'BLUE': '\033[94m',
+    'GREEN': '\033[92m',
+    'WARNING': '\033[93m',
+    'RED': '\033[91m',
+    'END': '\033[0m',
+    'BOLD': '\033[1m',
+    'UNDERLINE': '\033[4m'
+}
+
 def execute_command(command):
     return subprocess.run(command, **subprocess_options)
 
@@ -19,3 +30,23 @@ def send_notif(userid, msg):
     }
 
     requests.post(endpoint, data=payload)
+
+def display_msg(msg, msg_type=None, msg_end="\n"):
+    bold = color_codes['BOLD'] if msg_type in ['error',
+                                               'options', 'default_value', 'bold'] else ''
+
+    if msg_type in ['error', 'default_value']:
+        color = color_codes['RED']
+    elif msg_type == 'options':
+        color = color_codes['GREEN']
+    elif msg_type == 'link':
+        color = color_codes['BLUE']
+    else:
+        color = ''
+
+    print ("{0}{1}{2}{END}".format(bold, color, msg, **color_codes),
+           end=msg_end)
+
+def error_and_exit(msg):
+    display_msg(msg, 'error')
+    exit()
