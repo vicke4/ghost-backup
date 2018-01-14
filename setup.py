@@ -1,9 +1,10 @@
-from getpass import getpass
 import json
 import os
 import re
 import requests
 import time
+from traceback import format_exc
+from getpass import getpass
 
 from misc import display_msg, error_and_exit, execute_command, send_notif
 
@@ -102,9 +103,7 @@ def install_package(package_name):
                 package_name, get_error(e.args[0])))
 
 def get_credentials():
-    from apiclient.discovery import build
     from google_auth_oauthlib.flow import InstalledAppFlow
-    from apiclient.http import MediaFileUpload
 
     SCOPES = ['https://www.googleapis.com/auth/drive']
     client_config = {
@@ -138,12 +137,7 @@ def get_credentials():
 
     return credentials
 
-def setup_gdrive():
-    credentials = get_credentials()
-
-    display_msg('\nPlease wait till the Gdrive setup is complete..', 'bold')
-    drive = build('drive', 'v3', credentials=credentials)
-
+def create_backup_folder(drive):
     folder_query = ('mimeType="application/vnd.google-apps.folder" and '
                     'name = "Ghost Backup" and trashed = False')
 
@@ -171,10 +165,24 @@ def setup_gdrive():
 
         resp = drive.files().create(body=file_metadata, fields='id').execute()
 
-    if resp.get('id') is not None:
+    return resp.get('id')
+
+def setup_gdrive():
+    credentials = get_credentials()
+
+    display_msg('\nPlease wait till the Gdrive setup is complete..', 'bold')
+
+    from apiclient.discovery import build
+    from apiclient.http import MediaFileUpload
+
+    drive = build('drive', 'v3', credentials=credentials)
+
+    file_id = create_backup_folder(drive)
+
+    if file_id is not None:
         file_metadata = {
             'name': 'initial_backup.txt',
-            'parents': [resp.get('id')]
+            'parents': [file_id]
         }
         status = execute_command(
             "echo 'This text file is the initial backup' > backup.txt")
@@ -294,8 +302,9 @@ def main():
     display_input_prompt('\nMySQL hostname', 'localhost')
     display_input_prompt('\nMySQL username', 'root')
     display_input_prompt('\nMySQL password')
+    display_input_prompt('\nMySQL DB name')
 
-    display_msg('Please wait to complete requirements download...')
+    display_msg('\nPlease wait to complete requirements download...')
 
     install_package("google-api-python-client python-crontab "
                     "google-auth-httplib2 google-auth-oauthlib google-auth")
@@ -304,7 +313,7 @@ def main():
     setup_cron()
 
     display_yn_prompt("Would you like to get notifications\n"
-                "on Telegram about backup status?", 'notification', 'Y')
+                      "on Telegram about backup status?", 'notification', 'Y')
 
     if backup_options['notification']:
         setup_notifications()
@@ -317,4 +326,5 @@ if __name__ == '__main__':
     try:
         main()
     except Exception as e:
-        error_and_exit('Following error occured \n{0}\n'.format(e))
+        error_and_exit("\nFollowing error occured:\n{0}\n\n"
+                       "More info about the error:\n{1}".format(e, format_exc()))

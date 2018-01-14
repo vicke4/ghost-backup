@@ -1,4 +1,5 @@
 import subprocess
+import re
 import requests
 
 subprocess_options = {
@@ -47,6 +48,14 @@ def display_msg(msg, msg_type=None, msg_end="\n"):
     print ("{0}{1}{2}{END}".format(bold, color, msg, **color_codes),
            end=msg_end)
 
-def error_and_exit(msg):
+def error_and_exit(msg, telegram_userid=None):
     display_msg(msg, 'error')
+
+    if telegram_userid:
+        send_notif(telegram_userid, msg)
+
     exit()
+
+def format_subprocess_error(completed_process):
+    error_str = str(completed_process.stderr, 'utf-8')
+    return re.sub('/bin/sh: 1: ', '', error_str)
