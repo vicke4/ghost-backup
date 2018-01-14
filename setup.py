@@ -181,18 +181,22 @@ def setup_gdrive():
 
     if file_id is not None:
         file_metadata = {
-            'name': 'initial_backup.txt',
-            'parents': [file_id]
+            'name': 'backup.tar.gz',
+            'parents': [file_id],
+            'mimeType': 'application/gzip'
         }
+
         status = execute_command(
-            "echo 'This text file is the initial backup' > backup.txt")
+            "echo 'This text file is the initial backup' > backup.txt && "
+            "tar -czvf backup.tar.gz backup.txt"
+        )
 
         if status.returncode == 0:
-            media = MediaFileUpload('backup.txt')
+            media = MediaFileUpload('backup.tar.gz')
             resp = drive.files().create(body=file_metadata, media_body=media,
                                             fields='id').execute()
             backup_options['backup_file_id'] = resp.get('id')
-            execute_command('rm backup.txt')
+            execute_command('rm backup.txt backup.tar.gz')
             display_msg('Google Drive configured successfully', 'options')
         else:
             error_and_exit('\nInitial file creation failed')
@@ -240,7 +244,7 @@ def setup_notifications():
     retries = 0
 
     while(retries < 3):
-        print("Send any message to Telegram bot @GhostBackupBot\n"
+        print("\nSend any message to Telegram bot @GhostBackupBot\n"
               "you can also use this link ", end="")
         display_msg("https://t.me/GhostBackupBot", "link", "")
         print("\nOnce done enter your Telegram username without '@'")
@@ -258,7 +262,7 @@ def setup_notifications():
             if chat_obj['username'] == user_input:
                 backup_options['telegram_user_id'] = chat_obj['id']
                 send_notif(chat_obj['id'],
-                    "Hi {0}, starting today, you'll receive updates about "
+                    "Hi {0},\n\nStarting today you'll receive updates about "
                     "your Ghost blog backup on this chat. Have a nice day 😉"
                     .format(chat_obj['first_name'])
                 )
