@@ -11,6 +11,7 @@ from misc import (
     error_and_exit,
     execute_command,
     get_ecredentials,
+    install_package,
     send_notif
 )
 
@@ -68,46 +69,6 @@ def display_input_prompt(prompt_msg, prompt_default_value=''):
 
     return backup_options[backup_key]
 
-def get_error(e):
-    return str(e, 'utf-8').strip() if type(e) != str else e.strip()
-
-def install_pip():
-    pip_script_present = 'get-pip.py' in os.listdir()
-
-    if not pip_script_present:
-        status = execute_command("wget https://bootstrap.pypa.io/get-pip.py")
-
-    if pip_script_present or status.returncode == 0:
-        status = execute_command("python3 get-pip.py")
-
-        if status.returncode == 0:
-            return {'status': True, 'error': None}
-
-    return {'status': False, 'error': status.stderr}
-
-
-def install_package(package_name):
-    try:
-        status = execute_command("pip install --user {0}".format(package_name))
-
-        if status.returncode == 127:
-            raise Exception('pip not found')
-        elif status.returncode != 0:
-            raise Exception(status.stderr)
-
-    except Exception as e:
-        if e.args[0] == 'pip not found':
-            pip_install_status = install_pip()
-
-            if pip_install_status['status']:
-                install_package(package_name)
-            else:
-                error_and_exit("\nPip installation failed with the error\n{0}\n".format(
-                    get_error(pip_install_status['error'])))
-        else:
-            error_and_exit("\nInstallation of {0} failed with the error:\n{1}\n".format(
-                package_name, get_error(e.args[0])))
-
 def get_credentials():
     from google_auth_oauthlib.flow import InstalledAppFlow
 
@@ -127,8 +88,8 @@ def get_credentials():
 
     try:
         credentials = flow.run_console(
-            authorization_prompt_message='Please visit the below URL to get\n'
-            'autorization code to authorize Google Drive access\n\n{url}',
+            authorization_prompt_message='Please visit the below URL to get '
+            'autorization\ncode to authorize Google Drive access\n\n{url}',
             authorization_code_message='\nAuthorization Code\n'
         )
 

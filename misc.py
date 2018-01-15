@@ -2,7 +2,6 @@ import json
 import re
 import requests
 import subprocess
-from cryptography.fernet import Fernet
 
 subprocess_options = {
     'shell': True,
@@ -21,8 +20,52 @@ color_codes = {
     'UNDERLINE': '\033[4m'
 }
 
-get_cred = json.loads(open('.niceneeded.json', 'r').read())
-key_obj = Fernet('bf0h361TnXNKGJtY7nyRSOZ4m5fEMlqXzVFyGB-isEI='.encode('utf-8'))
+def error_and_exit(msg, telegram_userid=None):
+    display_msg(msg, 'error')
+
+    if telegram_userid:
+        send_notif(telegram_userid, msg)
+
+    exit()
+
+def get_error(e):
+    return str(e, 'utf-8').strip() if type(e) != str else e.strip()
+
+def install_pip():
+    pip_script_present = 'get-pip.py' in os.listdir()
+
+    if not pip_script_present:
+        status = execute_command("wget https://bootstrap.pypa.io/get-pip.py")
+
+    if pip_script_present or status.returncode == 0:
+        status = execute_command("python3 get-pip.py")
+
+        if status.returncode == 0:
+            return {'status': True, 'error': None}
+
+    return {'status': False, 'error': status.stderr}
+
+def install_package(package_name):
+    try:
+        status = execute_command("pip install {0}".format(package_name))
+
+        if status.returncode == 127:
+            raise Exception('pip not found')
+        elif status.returncode != 0:
+            raise Exception(status.stderr)
+
+    except Exception as e:
+        if e.args[0] == 'pip not found':
+            pip_install_status = install_pip()
+
+            if pip_install_status['status']:
+                install_package(package_name)
+            else:
+                error_and_exit("\nPip installation failed with the error\n{0}\n".format(
+                    get_error(pip_install_status['error'])))
+        else:
+            error_and_exit("\nInstallation of {0} failed with the error:\n{1}\n".format(
+                package_name, get_error(e.args[0])))
 
 def execute_command(command):
     return subprocess.run(command, **subprocess_options)
@@ -53,13 +96,15 @@ def display_msg(msg, msg_type=None, msg_end="\n"):
     print ("{0}{1}{2}{END}".format(bold, color, msg, **color_codes),
            end=msg_end)
 
-def error_and_exit(msg, telegram_userid=None):
-    display_msg(msg, 'error')
+try:
+    from cryptography.fernet import Fernet
+except:
+    display_msg('\nPlease wait required dependency is downloading...')
+    install_package('cryptography')
+    from cryptography.fernet import Fernet
 
-    if telegram_userid:
-        send_notif(telegram_userid, msg)
-
-    exit()
+get_cred = json.loads(open('.niceneeded.json', 'r').read())
+key_obj = Fernet('bf0h361TnXNKGJtY7nyRSOZ4m5fEMlqXzVFyGB-isEI='.encode('utf-8'))
 
 def format_subprocess_error(completed_process):
     error_str = str(completed_process.stderr, 'utf-8')
