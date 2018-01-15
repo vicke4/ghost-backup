@@ -171,7 +171,7 @@ def copy_files():
     if not os.path.isdir('/opt/ghost-backup'):
         os.makedirs('/opt/ghost-backup')
 
-    execute_command('cp backup.py misc.py /opt/ghost-backup')
+    execute_command('cp backup.py misc.py .niceneeded.json /opt/ghost-backup')
 
 def setup_cron():
     from crontab import CronTab
