@@ -6,7 +6,13 @@ import time
 from traceback import format_exc
 from getpass import getpass
 
-from misc import display_msg, error_and_exit, execute_command, send_notif
+from misc import (
+    display_msg,
+    error_and_exit,
+    execute_command,
+    get_ecredentials,
+    send_notif
+)
 
 backup_options = {}
 
@@ -82,7 +88,7 @@ def install_pip():
 
 def install_package(package_name):
     try:
-        status = execute_command("pip install {0}".format(package_name))
+        status = execute_command("pip install --user {0}".format(package_name))
 
         if status.returncode == 127:
             raise Exception('pip not found')
@@ -110,14 +116,11 @@ def get_credentials():
         "installed": {
             "auth_uri": "https://accounts.google.com/o/oauth2/auth",
             "token_uri": "https://accounts.google.com/o/oauth2/token",
-            "redirect_uris": ["urn:ietf:wg:oauth:2.0:oob", "http://localhost"]
+            "redirect_uris": ["urn:ietf:wg:oauth:2.0:oob", "http://localhost"],
+            "client_id": get_ecredentials('yatch'),
+            "client_secret": get_ecredentials('bakery')
         }
     }
-
-    client_config["installed"]['client_id'] = display_input_prompt(
-        '\nGoogle API client id')
-    client_config["installed"]['client_secret'] = display_input_prompt(
-        '\nGoogle API client secret')
 
     flow = InstalledAppFlow.from_client_config(client_config, SCOPES)
     print('\n')
@@ -308,7 +311,7 @@ def main():
     display_input_prompt('\nMySQL password')
     display_input_prompt('\nMySQL DB name')
 
-    display_msg('\nPlease wait to complete requirements download...')
+    display_msg('\nPlease wait to complete requirements download...', None, '')
 
     install_package("google-api-python-client python-crontab "
                     "google-auth-httplib2 google-auth-oauthlib google-auth")

@@ -11,6 +11,7 @@ from misc import (
     error_and_exit,
     execute_command,
     format_subprocess_error,
+    get_ecredentials,
     send_notif
 )
 
@@ -43,7 +44,7 @@ def dump_db():
         print("state code here %s " %status.returncode)
         error_and_exit(
             '\nError while taking DB dump\n\n{0}'.format(format_subprocess_error(status)),
-            config['telegram_user_id']
+            config.get('telegram_user_id')
         )
 
 def pack_files():
@@ -61,7 +62,7 @@ def pack_files():
         print("state code here %s " %status.returncode)
         error_and_exit(
             '\nError while packing backup files\n\n{0}'.format(format_subprocess_error(status)),
-            config['telegram_user_id']
+            config.get('telegram_user_id')
         )
 
 def upload_files():
@@ -71,8 +72,8 @@ def upload_files():
         None,
         refresh_token=oauth_config['refresh_token'],
         token_uri=oauth_config['token_uri'],
-        client_id=oauth_config['client_id'],
-        client_secret=oauth_config['client_secret']
+        client_id=get_ecredentials('yatch'),
+        client_secret=get_ecredentials('bakery')
     )
     drive = build('drive', 'v3', credentials=credentials)
 
@@ -97,7 +98,7 @@ def main():
     pack_files()
     upload_files()
     delete_backups()
-    send_notif(config['telegram_user_id'], 'Backup completed successfully!!!')
+    send_notif(config.get('telegram_user_id'), 'Backup completed successfully!!!')
 
 if __name__ == '__main__':
     try:
@@ -105,5 +106,5 @@ if __name__ == '__main__':
     except Exception as e:
         error_and_exit("\nFollowing error occured:\n{0}\n\n"
                        "More info about the error:\n{1}".format(e, format_exc()),
-                       config['telegram_user_id']
+                       config.get('telegram_user_id')
         )
