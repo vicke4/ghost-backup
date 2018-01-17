@@ -5,7 +5,6 @@ import requests
 import time
 from traceback import format_exc
 from getpass import getpass
-
 from misc import (
     display_msg,
     error_and_exit,
@@ -72,7 +71,7 @@ def display_input_prompt(prompt_msg, prompt_default_value=''):
 def get_credentials():
     from google_auth_oauthlib.flow import InstalledAppFlow
 
-    SCOPES = ['https://www.googleapis.com/auth/drive']
+    SCOPES = ['https://www.googleapis.com/auth/drive.file']
     client_config = {
         "installed": {
             "auth_uri": "https://accounts.google.com/o/oauth2/auth",
