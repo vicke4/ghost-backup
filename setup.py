@@ -94,6 +94,8 @@ def get_credentials():
         )
 
         client_config['installed']['refresh_token'] = credentials.refresh_token
+        client_config['installed'].pop('client_id')
+        client_config['installed'].pop('client_secret')
         backup_options['oauth'] = client_config['installed']
     except Exception as e:
         error_and_exit(
