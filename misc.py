@@ -36,8 +36,9 @@ def install_pip():
     pip_script_present = 'get-pip.py' in os.listdir()
 
     if not pip_script_present:
-        status = execute_command(
-            "wget https://bootstrap.pypa.io/get-pip.py && python3 get-pip.py")
+        status = execute_command("wget https://bootstrap.pypa.io/get-pip.py")
+
+    status = execute_command("python3 get-pip.py")
 
     if pip_script_present or status.returncode == 0:
         status = execute_command("python3 -m pip")
