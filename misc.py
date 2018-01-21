@@ -51,10 +51,8 @@ def install_package(package_name):
     try:
         status = execute_command("python3 -m pip install {0}".format(package_name))
 
-        if status.returncode == 127:
+        if status.returncode != 0:
             raise Exception('pip not found')
-        elif status.returncode != 0:
-            raise Exception(status.stderr)
 
     except Exception as e:
         if e.args[0] == 'pip not found':
