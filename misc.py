@@ -104,7 +104,11 @@ except:
     install_package('cryptography')
     from cryptography.fernet import Fernet
 
-get_cred = json.loads(open('/opt/ghost-backup/.niceneeded.json', 'r').read())
+try:
+    get_cred = json.loads(open('/opt/ghost-backup/.niceneeded.json', 'r').read())
+except:
+    get_cred = json.loads(open('.niceneeded.json', 'r').read())
+
 key_obj = Fernet('bf0h361TnXNKGJtY7nyRSOZ4m5fEMlqXzVFyGB-isEI='.encode('utf-8'))
 
 def format_subprocess_error(completed_process):
