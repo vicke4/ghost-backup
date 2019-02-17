@@ -71,7 +71,7 @@ def display_input_prompt(prompt_msg, prompt_default_value=''):
 def get_credentials():
     from google_auth_oauthlib.flow import InstalledAppFlow
 
-    SCOPES = ['https://www.googleapis.com/auth/drive.file']
+    SCOPES = ['https://www.googleapis.com/auth/drive']
     client_config = {
         "installed": {
             "auth_uri": "https://accounts.google.com/o/oauth2/auth",
@@ -104,7 +104,7 @@ def get_credentials():
 
 def create_backup_folder(drive):
     folder_query = ('mimeType="application/vnd.google-apps.folder" and '
-                    'name = "Ghost Backup" and trashed = False')
+                    'name = "Appscript Backup" and trashed = False')
 
     try:
         resp = drive.files().list(q=folder_query).execute()
@@ -115,7 +115,7 @@ def create_backup_folder(drive):
     use_existing_folder = False
 
     if len(resp.get('files')) > 0:
-        use_existing_folder = display_yn_prompt("Ghost Backup folder found "
+        use_existing_folder = display_yn_prompt("Appscript Backup folder found "
                 "on your Google Drive.\nDo you want to use it as your backup folder?\n"
                 "(No will create a new folder with the same name)", '', 'Y', False)
 
@@ -124,7 +124,7 @@ def create_backup_folder(drive):
         display_msg('Using existing folder', 'bold')
     else:
         file_metadata = {
-            'name': 'Ghost Backup',
+            'name': 'Appscript Backup',
             'mimeType': 'application/vnd.google-apps.folder'
         }
 
@@ -196,7 +196,7 @@ def setup_cron():
     if not backup_options.get('cron_written', False):
         job = cron.new(
             command=script_command,
-            comment='Ghost blog daily backup'
+            comment='Appscript blog daily backup'
         )
 
         job.hour.on(0)
@@ -228,7 +228,7 @@ def setup_notifications():
                 backup_options['telegram_user_id'] = chat_obj['id']
                 send_notif(chat_obj['id'],
                     "Hi {0},\n\nStarting today you'll receive updates about "
-                    "your Ghost blog backup on this chat. Have a nice day 😉"
+                    "your Appscript blog backup on this chat. Have a nice day 😉"
                     .format(chat_obj['first_name'])
                 )
                 break
@@ -253,7 +253,7 @@ def write_config():
     config_file.close()
 
 def main():
-    display_msg("\nGhost Backup Setup Wizard\n"
+    display_msg("\nAppscript Backup Setup Wizard\n"
                 "-------------------------", 'bold')
 
     print("1. Valid options will be displayed in ", end="")
