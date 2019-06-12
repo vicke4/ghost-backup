@@ -268,6 +268,7 @@ def main():
     display_yn_prompt("\nWould you like to backup images?", 'images')
     display_yn_prompt("\nWould you like to backup themes?", 'themes')
 
+    display_input_prompt('\nApp name')
     display_input_prompt('\nMySQL hostname', 'localhost')
     display_input_prompt('\nMySQL username', 'root')
     display_input_prompt('\nMySQL password')

@@ -21,7 +21,7 @@ def read_config():
     config_file = open('/opt/ghost-backup/.config.json', 'r')
     config_file_json = json.loads(config_file.read())
     config_file_json['timestamp'] = datetime.datetime.fromtimestamp(
-        time.time()).strftime('%Y%m%d%H%M%S')
+        time.time()).strftime('%Y%m%d')
     config.update(config_file_json)
 
 def dump_db():
@@ -79,7 +79,7 @@ def upload_files():
 
     media = MediaFileUpload('{0}.tar.gz'.format(config['timestamp']))
     file_metadata = {
-        'name': config['timestamp'] + '.tar.gz',
+        'name': ( '{app_name}' + '-' + config['timestamp'] + '.tar.gz').format(**config),
         'mimeType': 'application/gzip'
     }
 
@@ -98,7 +98,7 @@ def main():
     pack_files()
     upload_files()
     delete_backups()
-    send_notif(config.get('telegram_user_id'), 'Backup completed successfully!!!')
+    send_notif(config.get('telegram_user_id'), 'Backup completed successfully for ' + '{app_name}' + '.com' + '!').format(**config),
 
 if __name__ == '__main__':
     try:
