@@ -98,7 +98,9 @@ def main():
     pack_files()
     upload_files()
     delete_backups()
-    send_notif(config.get('telegram_user_id'), 'Backup completed successfully for ' + '{app_name}' + '.com' + '!').format(**config),
+    send_notif(config.get('telegram_user_id'), 'Backup completed successfully for ' + config.get('app_name') + '.com' + '!')
+
+
 
 if __name__ == '__main__':
     try:
