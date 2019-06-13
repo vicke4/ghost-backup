@@ -4,6 +4,6 @@ Python package to setup automatic backup for your Ghost blog. It uses Google Dri
 
 ## Installation
 ```
-git clone https://github.com/vicke4/ghost-backup && cd ghost-backup
+git clone https://github.com/gonzolively/ghost-backup && cd ghost-backup
 python3 setup.py
 ```
