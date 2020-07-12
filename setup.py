@@ -224,7 +224,7 @@ def setup_notifications():
         for message_obj in resp.json()['result']:
             chat_obj = message_obj['message']['chat']
 
-            if chat_obj['username'] == user_input:
+            if 'username' in chat_obj.keys() and chat_obj['username'] == user_input:
                 backup_options['telegram_user_id'] = chat_obj['id']
                 send_notif(chat_obj['id'],
                     "Hi {0},\n\nStarting today you'll receive updates about "
