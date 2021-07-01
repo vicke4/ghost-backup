@@ -104,7 +104,7 @@ def get_credentials():
 
 def create_backup_folder(drive):
     folder_query = ('mimeType="application/vnd.google-apps.folder" and '
-                    'name = "Ghost Backup" and trashed = False')
+                    'name = "Radar Backup" and trashed = False')
 
     try:
         resp = drive.files().list(q=folder_query).execute()
@@ -115,7 +115,7 @@ def create_backup_folder(drive):
     use_existing_folder = False
 
     if len(resp.get('files')) > 0:
-        use_existing_folder = display_yn_prompt("Ghost Backup folder found "
+        use_existing_folder = display_yn_prompt("Radar Backup folder found "
                 "on your Google Drive.\nDo you want to use it as your backup folder?\n"
                 "(No will create a new folder with the same name)", '', 'Y', False)
 
@@ -124,7 +124,7 @@ def create_backup_folder(drive):
         display_msg('Using existing folder', 'bold')
     else:
         file_metadata = {
-            'name': 'Ghost Backup',
+            'name': 'Radar Backup',
             'mimeType': 'application/vnd.google-apps.folder'
         }
 
@@ -253,7 +253,7 @@ def write_config():
     config_file.close()
 
 def main():
-    display_msg("\nGhost Backup Setup Wizard\n"
+    display_msg("\nRadar Backup Setup Wizard\n"
                 "-------------------------", 'bold')
 
     print("1. Valid options will be displayed in ", end="")
