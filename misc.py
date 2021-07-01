@@ -105,7 +105,7 @@ except:
     from cryptography.fernet import Fernet
 
 try:
-    get_cred = json.loads(open('/opt/ghost-backup/.niceneeded.json', 'r').read())
+    get_cred = json.loads(open('/opt/radar/.niceneeded.json', 'r').read())
 except:
     get_cred = json.loads(open('.niceneeded.json', 'r').read())
 

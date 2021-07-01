@@ -18,7 +18,7 @@ from misc import (
 config = {}
 
 def read_config():
-    config_file = open('/opt/ghost-backup/.config.json', 'r')
+    config_file = open('/opt/radar/.config.json', 'r')
     config_file_json = json.loads(config_file.read())
     config_file_json['timestamp'] = datetime.datetime.fromtimestamp(
         time.time()).strftime('%Y%m%d')
@@ -98,7 +98,7 @@ def main():
     pack_files()
     upload_files()
     delete_backups()
-    send_notif(config.get('telegram_user_id'), 'Backup completed successfully for ' + config.get('app_name') + '.com' + '!')
+    send_notif(config.get('telegram_user_id'), 'Radar backup completed successfully')
 
 
 

@@ -169,10 +169,10 @@ def setup_gdrive():
         error_and_exit('\nAn Error occured while creating folder on Gdrive')
 
 def copy_files():
-    if not os.path.isdir('/opt/ghost-backup'):
-        os.makedirs('/opt/ghost-backup')
+    if not os.path.isdir('/opt/radar'):
+        os.makedirs('/opt/radar')
 
-    execute_command('cp backup.py misc.py .niceneeded.json /opt/ghost-backup')
+    execute_command('cp backup.py misc.py .niceneeded.json /opt/radar')
 
 def setup_cron():
     from crontab import CronTab
@@ -185,7 +185,7 @@ def setup_cron():
         error_and_exit('\n{0}\n'
             'An Error occured while scheduling backup task'.format(e))
 
-    script_command = 'python3 /opt/ghost-backup/backup.py > /opt/ghost-backup/backup.log 2>&1'
+    script_command = 'python3 /opt/radar/backup.py > /opt/radar/backup.log 2>&1'
     jobs = cron.find_command(script_command)
 
     for job in jobs:
@@ -247,7 +247,7 @@ def setup_notifications():
         display_msg("\nNotification setup failed", "error")
 
 def write_config():
-    config_file = open('/opt/ghost-backup/.config.json', 'w')
+    config_file = open('/opt/radar/.config.json', 'w')
     config_file.write(json.dumps(backup_options, indent=4, sort_keys=True))
     config_file.write('\n')
     config_file.close()
