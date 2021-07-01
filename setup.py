@@ -277,7 +277,7 @@ def main():
     display_msg('\nPlease wait to complete requirements download...', None, '')
 
     install_package("google-api-python-client python-crontab "
-                    "google-auth-httplib2 google-auth-oauthlib google-auth google-oauth-oauthlib python3-distutils")
+                    "google-auth-httplib2 google-auth-oauthlib google-auth google-oauth-oauthlib")
     setup_gdrive()
     copy_files()
     setup_cron()
